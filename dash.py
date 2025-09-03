@@ -1,4 +1,4 @@
-# ativar o ambiente virtual no vscode  .\.venv\Scripts\Activate
+
 import streamlit as st
 import pandas as pd
 import yfinance as yf
@@ -387,4 +387,5 @@ def main():
 # Execução do Programa
 # ==============================
 if __name__ == "__main__":
+
     main()
