@@ -3,7 +3,5 @@ pandas
 yfinance
 requests
 BeautifulSoup
-datetime  
 timedelta
 python-bcb
-os
