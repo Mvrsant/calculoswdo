@@ -23,7 +23,7 @@ URLS = {
 HEADERS = {
     'User-Agent': 'Mozilla/5.0'
 }
-DEFAULT_EXCEL_PATH = pd.read_excel("ddeprofit.xlsx") #r"C:\Users\user\Documents\planilhas\ddeprofit.xlsx"
+DEFAULT_EXCEL_PATH = r"C:\Users\user\Documents\planilhas\ddeprofit.xlsx"
 
 # ==============================
 # Funções Auxiliares
@@ -389,5 +389,6 @@ def main():
 if __name__ == "__main__":
 
     main()
+
 
 
