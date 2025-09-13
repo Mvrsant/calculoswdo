@@ -2,6 +2,6 @@ streamlit
 pandas
 yfinance
 requests
-BeautifulSoup
-timedelta
+BeautifulSoup4
+numpy
 python-bcb
