@@ -23,7 +23,13 @@ URLS = {
 HEADERS = {
     'User-Agent': 'Mozilla/5.0'
 }
-DEFAULT_EXCEL_PATH = r"C:\Users\user\Documents\planilhas\ddeprofit.xlsx"
+#DEFAULT_EXCEL_PATH = r"C:\Users\user\Documents\planilhas\ddeprofit.xlsx"
+if os.path.exists("ddeprofit.xlsx"):
+    df = pd.read_excel("ddeprofit.xlsx")
+    st.success("✅ Arquivo DDE carregado automaticamente!")
+else:
+    st.error("❌ Arquivo ddeprofit.xlsx não encontrado no repositório")
+
 
 # ==============================
 # Funções Auxiliares
@@ -389,6 +395,7 @@ def main():
 if __name__ == "__main__":
 
     main()
+
 
 
 
