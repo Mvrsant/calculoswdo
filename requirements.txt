@@ -5,3 +5,5 @@ requests
 BeautifulSoup4
 numpy
 python-bcb
+os
+timedelta
