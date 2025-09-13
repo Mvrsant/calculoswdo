@@ -1,3 +1,5 @@
+# ativar o ambiente virtual no vscode  .\.venv\Scripts\Activate / rodar o streamlit : python -m streamlit run dash.py
+# dashbord com Cálculos de paridade para o mini contrato futuro de Dólar em Reais (WDO)
 
 import streamlit as st
 import pandas as pd
@@ -387,8 +389,8 @@ def main():
 # Execução do Programa
 # ==============================
 if __name__ == "__main__":
-
     main()
+
 
 
 
