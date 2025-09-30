@@ -110,7 +110,7 @@ def carregar_dados_excel():
         if not os.path.exists(caminho_local):
             baixar_planilha_github(url_github, caminho_local)
         data = pd.read_excel(caminho_local)
-        st.success(f"Planilha carregada: {caminho_local}")
+        st.success(f"Planilha carregada")#: {caminho_local}")
 
         # Valida colunas
         required_columns = ['Asset', 'Fechamento Anterior', 'Último']
@@ -327,15 +327,60 @@ def main():
     if menu == "📉 Paridades CME/BRLUSD":
         for ticker_key, nome in [("cme", "CME - 6L"), ("brl_usd", "BRL/USD")]:
             cotacoes = obter_cotacoes_yfinance(TICKERS[ticker_key])
-            df = criar_dataframe_cotacoes(cotacoes, nome) 
+            df = criar_dataframe_cotacoes(cotacoes, nome)
             if df is not None:
-               st.write(f"### {nome}")
-               st.dataframe(df)
+                # Convert any date columns to datetime for Arrow compatibility
+                import warnings
+                for col in df.columns:
+                    if df[col].dtype == object:
+                        try:
+                            df[col] = pd.to_datetime(df[col], format='%d/%m/%Y', dayfirst=True)
+                        except Exception:
+                            try:
+                                with warnings.catch_warnings():
+                                    warnings.filterwarnings("ignore", category=UserWarning, message="Could not infer format*")
+                                    df[col] = pd.to_datetime(df[col])
+                            except Exception:
+                                pass
+                st.write(f"### {nome}")
+                st.dataframe(df)
 
     elif menu == "📊 Dados Carregados":
         st.subheader("📄 Dados Carregados")
-        if dados_excel:
-            st.dataframe(dados_excel)
+        if dados_excel is not None:
+            # If dados_excel is a DataFrame, ensure Arrow compatibility
+            if isinstance(dados_excel, pd.DataFrame):
+                import warnings
+                for col in dados_excel.columns:
+                    if dados_excel[col].dtype == object:
+                        try:
+                            dados_excel[col] = pd.to_datetime(dados_excel[col], format='%d/%m/%Y', dayfirst=True)
+                        except Exception:
+                            try:
+                                with warnings.catch_warnings():
+                                    warnings.filterwarnings("ignore", category=UserWarning, message="Could not infer format*")
+                                    dados_excel[col] = pd.to_datetime(dados_excel[col])
+                            except Exception:
+                                pass
+                st.dataframe(dados_excel)
+            # If it's a dict, try to display as DataFrame
+            elif isinstance(dados_excel, dict):
+                df_temp = pd.DataFrame([dados_excel])
+                import warnings
+                for col in df_temp.columns:
+                    if df_temp[col].dtype == object:
+                        try:
+                            df_temp[col] = pd.to_datetime(df_temp[col], format='%d/%m/%Y', dayfirst=True)
+                        except Exception:
+                            try:
+                                with warnings.catch_warnings():
+                                    warnings.filterwarnings("ignore", category=UserWarning, message="Could not infer format*")
+                                    df_temp[col] = pd.to_datetime(df_temp[col])
+                            except Exception:
+                                pass
+                st.dataframe(df_temp)
+            else:
+                st.write(dados_excel)
         else:
             st.warning("Não foi possível carregar os dados do Excel.")
 
@@ -423,7 +468,7 @@ def main():
                 if tabela_bandas is not None:
                     st.dataframe(
                         tabela_bandas,
-                        use_container_width=True,
+                        width='stretch',
                         hide_index=True,
                         column_config={
                             "Tipo de Banda": st.column_config.TextColumn(

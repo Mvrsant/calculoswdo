@@ -1,9 +1,14 @@
 import pandas as pd
 
 def estilizar_tabela(df, cols_gradiente, cmap="PuBuGn", bold_cols=["Métrica"]):
-    styled = df.style.background_gradient(subset=cols_gradiente, cmap=cmap)
+    # Filtra apenas colunas numéricas para o gradiente
+    cols_numericas = [col for col in cols_gradiente if pd.api.types.is_numeric_dtype(df[col])]
+    styled = df.style
+    if cols_numericas:
+        styled = styled.background_gradient(subset=cols_numericas, cmap=cmap)
     for col in bold_cols:
-        styled = styled.set_properties(**{'font-weight': 'bold'}, subset=[col])
+        if col in df.columns:
+            styled = styled.set_properties(**{'font-weight': 'bold'}, subset=[col])
     return styled
 
 def estilizar_bandas_ptax(df):

@@ -53,11 +53,12 @@ def obter_cotacoes_yfinance(ticker, period="5d"):
             return None
         return {
             'open': data['Open'].iloc[-1],
-            'high': data['High'].iloc[-1],
+            'high': data['High'].iloc[-1], 
             'low': data['Low'].iloc[-1],
             'close': data['Close'].iloc[-1]
         }
-    except Exception:
+    except Exception as e:
+        st.error(f"Erro ao obter dados para {ticker}: {e}")
         return None
 
 def obter_valor_grama_ouro_reais():
@@ -91,7 +92,7 @@ def carregar_dados_excel():
         if not os.path.exists(caminho_local):
             baixar_planilha_github(url_github, caminho_local)
         data = pd.read_excel(caminho_local)
-        st.success(f"Planilha carregada: {caminho_local}")
+        st.success(f"DADOS CARREGADOS") #"Planilha carregada: {caminho_local}")
 
         # Valida colunas
         required_columns = ['Asset', 'Fechamento Anterior', 'Último']
@@ -177,7 +178,7 @@ def calcular_paridade_ouro(xauusd, valor_grama_ouro_reais):
 def calcular_abertura_wdo(wdo_fechamento, dxy_variacao):
     if None in (wdo_fechamento, dxy_variacao):
         return None
-    return round(wdo_fechamento * (1 + dxy_variacao / 100), 4)
+    return round(wdo_fechamento * (1 + dxy_variacao / 100), 2)
 
 def calcular_over(di1_fut, business_days):
     if None in (di1_fut, business_days):
