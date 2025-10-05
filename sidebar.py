@@ -449,20 +449,20 @@ def main():
             st.divider()
             bandas_ptax = calcular_bandas_ptax(wdo_abertura, over, sup_volb3, ptax_cotacoes)
             if bandas_ptax:
-                st.write("### 📐 Parâmetros de Cálculo")
-                col1, col2 = st.columns(2)
-                with col1:
-                    st.metric(
-                        "🎯 Deslocamento (Valor)", 
-                        f"{bandas_ptax['Deslocamento PTAX (valor)']:.5f}",
-                        help="Deslocamento base usado no cálculo das bandas"
-                    )
-                with col2:
-                    st.metric(
-                        "📍 Deslocamento (Pontos)", 
-                        f"{bandas_ptax['Deslocamento PTAX (pontos)']:.4f}",
-                        help="Deslocamento convertido em pontos"
-                    )
+                # st.write("### 📐 Parâmetros de Cálculo")
+                # col1, col2 = st.columns(2)
+                # with col1:
+                #     st.metric(
+                #         "🎯 Deslocamento (Valor)", 
+                #         f"{bandas_ptax['Deslocamento PTAX (valor)']:.5f}",
+                #         help="Deslocamento base usado no cálculo das bandas"
+                #     )
+                # with col2:
+                #     st.metric(
+                #         "📍 Deslocamento (Pontos)", 
+                #         f"{bandas_ptax['Deslocamento PTAX (pontos)']:.4f}",
+                #         help="Deslocamento convertido em pontos"
+                #     )
                 st.write("### 📊 Bandas PTAX Calculadas")
                 tabela_bandas = criar_tabela_bandas_ptax(bandas_ptax, qtde)
                 if tabela_bandas is not None:
@@ -483,39 +483,8 @@ def main():
                             ) for i in range(1, qtde + 1)}
                         }
                     )
-                    with st.expander("ℹ️ Como interpretar as bandas"):
-                        st.write("""
-                        **Explicação das Bandas PTAX:**
-                        - **1ª Máxima/Mínima**: Bandas principais calculadas com base no deslocamento
-                        - **2ª Máxima/Mínima**: Bandas secundárias com ajuste adicional (±0.5%)
-
-                        **Interpretação:**
-                        - Valores **acima da 1ª Máxima**: Possível sobrecompra
-                        - Valores **abaixo da 1ª Mínima**: Possível sobrevenda  
-                        - **Entre as bandas**: Zona de negociação normal
-                        """)
-                    if qtde >= 2:
-                        st.write("### 📈 Resumo Estatístico")
-                        maximas_1 = [bandas_ptax[f'1ª Máxima PTAX{i}'] for i in range(1, qtde + 1)]
-                        minimas_1 = [bandas_ptax[f'1ª Mínima PTAX{i}'] for i in range(1, qtde + 1)]
-                        col1, col2, col3 = st.columns(3)
-                        with col1:
-                            st.metric(
-                                "📊 Média 1ª Máxima", 
-                                f"{sum(maximas_1)/len(maximas_1):.2f}"
-                            )
-                        with col2:
-                            st.metric(
-                                "📊 Média 1ª Mínima", 
-                                f"{sum(minimas_1)/len(minimas_1):.2f}"
-                            )
-                        with col3:
-                            amplitude = (sum(maximas_1)/len(maximas_1)) - (sum(minimas_1)/len(minimas_1))
-                            st.metric(
-                                "📏 Amplitude Média", 
-                                f"{amplitude:.2f}",
-                                help="Diferença entre máxima e mínima médias"
-                            )
+                    # 
+                    
             else:
                 st.warning("⚠️ Não foi possível calcular as bandas PTAX. Verifique se todos os dados necessários estão disponíveis.")
         else:
