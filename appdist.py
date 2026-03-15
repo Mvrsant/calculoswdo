@@ -364,7 +364,7 @@ with col_h1:
     st.markdown("""
     <div style='padding-top:8px'>
         <p class='wdo-title'>📈 WDO — Mini Contrato Futuro de Dólar</p>
-        <p class='wdo-sub'> Cálculos para o mini contrato de dólar negociado na BM&F Bovespa </p>
+        <p class='wdo-sub'>BM&F Bovespa · Cálculos automáticos</p>
     </div>""", unsafe_allow_html=True)
 with col_h3:
     atualizar = st.button("🔄 Atualizar", use_container_width=True)
@@ -377,7 +377,7 @@ st.markdown("<hr style='border-color:#30363d;margin:0 0 16px 0'>", unsafe_allow_
 # ─────────────────────────────────────────────
 # CARGA DE DADOS (com spinner único)
 # ─────────────────────────────────────────────
-with st.spinner("Buscando dados..."):
+with st.spinner("Buscando dados — yfinance · BCB · B3 · melhorcambio..."):
     planilha   = buscar_planilha_github()
     sup_volb3  = buscar_sup_volb3()
     xauusd_d   = buscar_yfinance(TICKERS["xauusd"])
@@ -402,7 +402,70 @@ paridade_ouro = calc_paridade_ouro(xauusd, ouro_brl)
 bandas       = calc_bandas(wdo_abertura, over, sup_volb3)
 bandas_ptax  = calc_bandas_ptax(wdo_abertura, over, sup_volb3, ptax_cots)
 
+# ─────────────────────────────────────────────
+# Funções de alerta de distorção
+# ─────────────────────────────────────────────
+def calc_distorcao(preco_ref, paridade, label):
+    """Retorna dict com desvio em pts e % entre preço de referência e uma paridade."""
+    if preco_ref is None or paridade is None:
+        return None
+    desvio_pts = round(preco_ref - paridade, 2)
+    desvio_pct = round((preco_ref - paridade) / paridade * 100, 4)
+    return {"label": label, "ref": preco_ref, "paridade": paridade,
+            "desvio_pts": desvio_pts, "desvio_pct": desvio_pct}
+
+def badge_distorcao(d, lim_pts, lim_pct):
+    """Retorna HTML do badge de status baseado nos limiares configurados."""
+    if d is None:
+        return '<span style="background:#21262d;color:#6e7681;border-radius:4px;font-size:11px;padding:2px 8px;font-family:JetBrains Mono">sem dados</span>'
+    alerta = abs(d["desvio_pts"]) > lim_pts or abs(d["desvio_pct"]) > lim_pct
+    if alerta:
+        cor_bg, cor_txt, icone = "#3d1a1a", "#f85149", "⚠ DISTORÇÃO"
+    else:
+        cor_bg, cor_txt, icone = "#1a3a23", "#3fb950", "✓ OK"
+    return (f'<span style="background:{cor_bg};color:{cor_txt};border:1px solid {cor_txt}33;'
+            f'border-radius:4px;font-size:11px;padding:2px 8px;font-family:JetBrains Mono">{icone}</span>')
+
+def card_alerta(d, lim_pts, lim_pct):
+    """Renderiza um card completo de distorção com st.metric + badge."""
+    if d is None:
+        return
+    alerta = abs(d["desvio_pts"]) > lim_pts or abs(d["desvio_pct"]) > lim_pct
+    cor = "#f85149" if alerta else "#3fb950"
+    sinal = "+" if d["desvio_pts"] >= 0 else ""
+    st.markdown(
+        f"""<div style="background:#161b22;border:1px solid {'#f8514944' if alerta else '#3fb95044'};
+        border-left:3px solid {cor};border-radius:8px;padding:12px 16px;margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <span style="font-size:12px;color:#8b949e;font-family:JetBrains Mono">{d['label']}</span>
+            {badge_distorcao(d, lim_pts, lim_pct)}
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+            <div>
+                <div style="font-size:10px;color:#6e7681;font-family:JetBrains Mono">Referência (WDO)</div>
+                <div style="font-size:16px;font-weight:600;color:#e6edf3;font-family:JetBrains Mono">{fmt(d['ref'],2)}</div>
+            </div>
+            <div>
+                <div style="font-size:10px;color:#6e7681;font-family:JetBrains Mono">Paridade</div>
+                <div style="font-size:16px;font-weight:600;color:#58a6ff;font-family:JetBrains Mono">{fmt(d['paridade'],2)}</div>
+            </div>
+            <div>
+                <div style="font-size:10px;color:#6e7681;font-family:JetBrains Mono">Desvio</div>
+                <div style="font-size:16px;font-weight:600;color:{cor};font-family:JetBrains Mono">{sinal}{fmt(d['desvio_pts'],2)} pts</div>
+                <div style="font-size:11px;color:{cor};font-family:JetBrains Mono">{sinal}{fmt(d['desvio_pct'],4)}%</div>
+            </div>
+        </div></div>""",
+        unsafe_allow_html=True
+    )
+
 horario = agora_br()
+
+# ─── PTAX mais recente e distorções ────────
+ptax_recente = next((p for p in reversed(ptax_cots) if p is not None), None)
+ptax_recente_brl = round(ptax_recente["valor"] * 1000, 2) if ptax_recente else None
+
+dist_ouro = calc_distorcao(wdo_fut, paridade_ouro, "WDO vs Paridade Ouro")
+dist_ptax  = calc_distorcao(wdo_fut, ptax_recente_brl, "WDO vs PTAX mais recente")
 
 # ─────────────────────────────────────────────
 # STATUS DOS DADOS (mini painel)
@@ -438,6 +501,42 @@ with aba1:
     m2.metric("Preço Justo",    fmt(preco_justo, 4))
     m3.metric("Paridade Ouro",  fmt(paridade_ouro, 4))
     m4.metric("Variação DXY",   f"{fmt(dxy_var, 2)}%" if dxy_var else "—")
+
+    st.markdown("<hr style='border-color:#30363d'>", unsafe_allow_html=True)
+
+    # ── PAINEL DE ALERTAS DE DISTORÇÃO ──────────
+    st.markdown("#### 🔔 Alertas de distorção")
+    st.caption(f"Referência: WDO Fechamento Anterior ({fmt(wdo_fut,2)} pts) · "
+               f"PTAX base: {fmt(ptax_recente_brl,2) if ptax_recente_brl else '—'} "
+               f"({'PTAX ' + str([i+1 for i,p in enumerate(ptax_cots) if p is not None][-1]) if ptax_recente else 'indisponível'})")
+
+    with st.expander("⚙️ Configurar limiares de alerta", expanded=False):
+        ca1, ca2 = st.columns(2)
+        with ca1:
+            lim_pts = st.number_input("Limiar em pontos (pts)", min_value=0.0,
+                                      value=10.0, step=1.0, format="%.1f",
+                                      help="Alerta quando desvio absoluto superar este valor em pontos")
+        with ca2:
+            lim_pct = st.number_input("Limiar em % do preço", min_value=0.0,
+                                      value=0.20, step=0.05, format="%.2f",
+                                      help="Alerta quando desvio absoluto superar esta % do preço")
+        st.caption("O alerta dispara se qualquer um dos dois limiares for superado.")
+
+    # Usar valores padrão se o expander não foi aberto ainda
+    try:
+        lim_pts
+    except NameError:
+        lim_pts = 10.0
+    try:
+        lim_pct
+    except NameError:
+        lim_pct = 0.20
+
+    card_alerta(dist_ouro, lim_pts, lim_pct)
+    card_alerta(dist_ptax,  lim_pts, lim_pct)
+
+    if dist_ouro is None and dist_ptax is None:
+        st.info("Dados insuficientes para calcular distorções. Verifique o status dos dados acima.")
 
     st.markdown("<hr style='border-color:#30363d'>", unsafe_allow_html=True)
 
@@ -663,7 +762,7 @@ with aba5:
 st.markdown(f"""
 <div style='margin-top:32px;padding-top:12px;border-top:1px solid #30363d;text-align:center'>
     <p style='font-size:11px;color:#6e7681;font-family:JetBrains Mono'>
-        Calculadora WDO  · dados atualizados em {horario} (BRT) ·
+        WDO Calculator · dados atualizados em {horario} (BRT) · yfinance · BCB · B3 · melhorcambio.com
     </p>
 </div>
 """, unsafe_allow_html=True)
