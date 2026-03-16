@@ -363,8 +363,8 @@ col_h1, col_h2, col_h3 = st.columns([3, 2, 1])
 with col_h1:
     st.markdown("""
     <div style='padding-top:8px'>
-        <p class='wdo-title'>📈 WDO — Mini Contrato Futuro de Dólar</p>
-        <p class='wdo-sub'>BM&F Bovespa · Cálculos automáticos</p>
+        <p class='wdo-title'>📈 WDO — Mini Contrato Futuro de Dólar  BM&F Bovespa -</p>
+        <p class='wdo-sub'>Cálculos para o WDO· </p>
     </div>""", unsafe_allow_html=True)
 with col_h3:
     atualizar = st.button("🔄 Atualizar", use_container_width=True)
@@ -762,7 +762,7 @@ with aba5:
 st.markdown(f"""
 <div style='margin-top:32px;padding-top:12px;border-top:1px solid #30363d;text-align:center'>
     <p style='font-size:11px;color:#6e7681;font-family:JetBrains Mono'>
-        WDO Calculator · dados atualizados em {horario} (BRT) · yfinance · BCB · B3 · melhorcambio.com
+        WDO Calculator · dados atualizados em {horario} (BRT) ·
     </p>
 </div>
 """, unsafe_allow_html=True)
